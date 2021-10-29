@@ -1,4 +1,5 @@
 // TODO: import your models here
+const { Task, Note, Category } = require('./models');
 
 class AddItemScreen {
   constructor(rl) {
@@ -56,9 +57,19 @@ class AddItemScreen {
     console.log();
 
     // TODO: Get categories, here
+    const categories = await Category.findAll({
+      order: ["id"],
+    });
     // TODO: Print categories, here, with ids so users can select them
+    for (const category of categories) {
+      console.log(`${category.id}. ${category.name}`);
+    }
 
     console.log();
+  }
+
+  sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   async printTaskUi3(title, categoryId) {
@@ -70,7 +81,9 @@ class AddItemScreen {
     console.log(`TITLE: ${title}`);
 
     // TODO: Get the category by its id
+    const category = await Category.findByPk(categoryId);
     // TODO: Print it here
+    console.log(`Category: ${category.name}`);
 
     console.log();
     console.log("(Type your text and hit \"Enter\" to return to");
@@ -88,6 +101,14 @@ class AddItemScreen {
         this.rl.question("> ", async answer => {
 
           // TODO: Save a Note, here
+          try {
+            await Note.create({ content: answer });
+          } catch (err) {
+            for (const validationError of err.errors) {
+              console.log("*", validationError.message);
+            }
+            await this.sleep(5000);
+          }
 
           const screen = new ManageTasksScreen(this.rl);
           screen.show();
@@ -97,12 +118,23 @@ class AddItemScreen {
         this.rl.question("> ", async title => {
           await this.printTaskUi2(title);
           this.rl.question("> ", async categoryId => {
-            categoryId = Number.parseInt(categoryId) - 1;
+            categoryId = Number.parseInt(categoryId);
             await this.printTaskUi3(title, categoryId);
             this.rl.question("> ", async description => {
 
               // TODO: Save a task, here with title, categoryId, and description
-
+              try {
+                await Task.create({
+                  title,
+                  categoryId,
+                  description
+                })
+              } catch {
+                for (const validationError of err.errors) {
+                  console.log("*", validationError.message);
+                }
+                await this.sleep(5000);
+              }
               const screen = new ManageTasksScreen(this.rl);
               screen.show();
             });
