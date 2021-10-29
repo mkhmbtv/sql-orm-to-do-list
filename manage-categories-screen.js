@@ -1,4 +1,5 @@
 // TODO: Import your models, here
+const { Category } = require('./models');
 
 class ManageCategoriesScreen {
   constructor(rl) {
@@ -13,7 +14,13 @@ class ManageCategoriesScreen {
     console.log();
 
     // TODO: Get the categories
+    const categories = await Category.findAll({
+      order: ["id"],
+    });
     // TODO: Print the categories with their ids so a user can select one
+    for (const category of categories) {
+      console.log(`${category.id}. ${category.name}`);
+    }
 
     console.log();
     console.log("X. Go to main screen");
@@ -28,7 +35,7 @@ class ManageCategoriesScreen {
       if (answer === 'X') {
         new MainScreen(this.rl).show();
       } else {
-        const index = Number.parseInt(answer) - 1;
+        const index = Number.parseInt(answer);
         new EditCategoryScreen(this.rl, index).show();
       }
     });
